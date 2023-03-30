@@ -1,6 +1,10 @@
 package org.exercicio.banco.template.model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Objects;
+
+import org.exercicio.banco.template.model.enumerator.TipoTransacao;
 
 /**
 *
@@ -14,6 +18,7 @@ public class ContaBancaria {
 	private double saldo;
 	private String titular;
 	private boolean status;
+	private ArrayList<RegistroTransacao> transacoes;
 
 	/**
 	 * Construtor recebe apenas numeroConta e titular. Saldo e status iniciam
@@ -25,12 +30,15 @@ public class ContaBancaria {
 		this.numeroConta = numeroConta;
 		this.saldo = saldo;
 		this.status = true;
+		transcoes = new ArrayList<>();
 	}
 	
 	public ContaBancaria(int numeroConta, String titular) {
 		this.numeroConta = numeroConta;
+		this.titular = titular;
 		this.saldo = 0;
 		this.status = true;
+		transacoes = new ArrayList<>();
 	}
 
 	/*
@@ -56,6 +64,7 @@ public class ContaBancaria {
 			System.out.print("Valor invalido para deposito.");
 		} else 
 			this.saldo += valor;
+		transacoes.add(new RegistroTransacao(LocalDateTime.now(), valor, TipoTransacao.DEPOSITO));
 		
 	}
 
@@ -78,6 +87,7 @@ public class ContaBancaria {
 			System.out.print("Valor invalido para saque.");
 		} else if(valor < this.saldo) {
 			this.saldo -= valor;
+			transacoes.add(new RegistroTransacao(LocalDateTime.now(), valor, TipoTransacao.SAQUE));
 		} else
 			System.out.print("Saldo insuficiente.");
 		
@@ -137,9 +147,25 @@ public class ContaBancaria {
 			System.out.print("Saldo insuficiente para transferencia.");
 		} else
 			this.saldo -= quantia;
-		    destino.saldo += quantia;
+		    destino.setSaldo(destino.getSaldo()+ quantia);
+		transacoes.add(new RegistroTransacao(LocalDateTime.now(), quantia, TipoTransacao.TRANSFERENCIA_DEBITADO));
+		destino.transacoes.add(new RegistroTransacao(LocalDateTime.now(), quantia, TipoTransacao.TRANSFERENCIA_CREDITADO));
 
 	}
+	public void imprimirExtrato(int mes, int ano) {
+		double saldoExtrato = 0;
+		for(RegistroTransacao rt : transacoes) {
+			if(rt.getDataTransacao().getMonth().getValue() == mes && rt.getDataTransacao().getYear() == ano) {
+				saldoExtrato += rt.getValor();
+				System.out.println(rt);
+			}
+		}
+		System.out.println("Impressão do saldo referente ao extrato: "+saldoExtrato);
+	}
+	
+	public void setSaldo(double saldo){
+		this.saldo = saldo;
+	}	
 
 	public int getNumeroConta() {
 		return numeroConta;
